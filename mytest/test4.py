@@ -2,58 +2,103 @@ import requests, pprint
 import datetime
 import numpy as np
 import matplotlib.pyplot as plt
-myurl = "http://app-dev.vor.frgrisk.com:7980/SASStoredProcess/do?_username=stpservice@saspw&_password=%7BSAS002%7DF7A6FA3F175EB5A8504C13D1570D585D&_program=%2FSystem%2FApplications%2FVOR+System%2FCommon%2Fstps%2FFactorModel%2Ffit_model&_action=EXECUTE&start_dt=03Jun2008&end_dt=30Jun2017&freq=MONTH&fund=146&model_sk=168&factor=130&factor=131&restrict=.&restrict=3"
 
+import dataprocessing
+import csv
 
+# myurl = "http://app-dev.vor.frgrisk.com:7980/SASStoredProcess/do?_username=stpservice@saspw&_password=%7BSAS002%7DF7A6FA3F175EB5A8504C13D1570D585D&_program=%2FSystem%2FApplications%2FVOR+System%2FCommon%2Fstps%2FFactorModel%2Ffit_model&_action=EXECUTE&start_dt=03Jun2008&end_dt=30Jun2017&freq=MONTH&fund=146&model_sk=168&factor=130&factor=131&restrict=.&restrict=3"
 
-def main():
-    TOTAL_IT = 50
-    SINGLE_IT = 1
-
-    print(10*"--*--")
+def test_stp_service(Service_Name, Service_URL, Total_It):
+    print(5*"--*--"+"Start Testing"+5*"--*--")
     SamplePath = np.array([])
-
     TEST_START = datetime.datetime.now()
 
-    for it in range(TOTAL_IT):
-
-        if (it+1)/TOTAL_IT*100%10 == 0:
-            print("Progress:" + str((it+1)/TOTAL_IT*100)+"%")
+    for it in range(Total_It):
+        if (it+1)/Total_It*100%10 == 0:
+            print("Testing "+ Service_Name+" Progress:" + str((it+1)/Total_It*100)+"%")
 
         t_start = datetime.datetime.now()
-        for _ in range(SINGLE_IT):
-            r = requests.get(myurl)
-
+        r = requests.get(Service_URL)
         t_end = datetime.datetime.now()
         duration = t_end - t_start
-        SamplePath = np.append(SamplePath,[duration.total_seconds()])
-        # print("Total time: "+ str(t_end - t_start) )
+        SamplePath = np.append(SamplePath, [duration.total_seconds()])
+
     TEST_END = datetime.datetime.now()
     TOTAL_TIME = TEST_END - TEST_START
     print(5 * "--*--" + " The end " + 5 * "--*--")
-    print("Testing window: " + str(TEST_START.replace(second=0, microsecond=0))+" to "+ str(TEST_END.replace(second=0, microsecond=0)))
-    print("Total elapsed time: " + str(TOTAL_TIME.total_seconds()) + "s")
+    print("Testing window for " + Service_Name+ " : " + str(TEST_START.replace(second=0, microsecond=0))+" to "+ str(TEST_END.replace(second=0, microsecond=0)))
+    print("Total elapsed time for : " +Service_Name + " : "+ str(TOTAL_TIME.total_seconds()) + "s")
 
-    np.savetxt('fit_model_update.csv', SamplePath, delimiter=',')  # X is an array
+    np.savetxt('output/'+Service_Name+'.csv', SamplePath, delimiter=',')  # X is an array
 
-    # Need to write a outlier remover
+    outfile = open('example.csv', 'a+')
+    writer = csv.writer(outfile, delimiter=';', quotechar='"')
+    writer.writerows([SamplePath])
+    # writer.writerows([Service_Name, SamplePath])
+    outfile.close()
 
-    SampleMean = np.mean(SamplePath)
-    SampleVar = np.var(SamplePath)
-    Report = "Sample Mean: " + str(np.around(SampleMean, decimals=2)) + " Sample Var: " + str(np.around(SampleVar, decimals=3))
-    plt.figure()
-    fig = plt.plot(SamplePath)
-    plt.ylabel("Response Time(s)")
-    plt.xlabel("Trial")
-    plt.suptitle("fit_model", fontsize=14, fontweight='bold')
-    plt.annotate(Report, xy=(0.05, 0.95), xycoords='axes fraction')
-    plt.ylim(ymax = np.max(SamplePath)+0.05)
-    # plt.text(1, 1,'matplotlib', horizontalalignment='center',
-    #              verticalalignment='center',
-    #              transform=fig.transAxes)
+    return SamplePath
 
-    plt.show()
+def readService2Test(filename):
+    with open(filename) as csvfile:
+        readCSV = csv.reader(csvfile, delimiter=',')
+        for row in readCSV:
+            print(row[1])
+            # print()
+
+def main():
+    ServiceList=[]
+    AllSamplePath = np.array([])
+
+    readCSV = readCSV = csv.reader(open("Service_List.csv"), delimiter=',')
+    for row in readCSV:
+        Service_Name = row[0]
+        Service_URL = row[1]
+
+        ServiceList.append(Service_Name) 
+        print(row)
+        test_stp_service(Service_Name,Service_URL,1)
+        dataprocessing.plotresult(Service_Name)
+
+    print(4*"--*---"+"Complete Test List"+4*"--*---")
+    print(ServiceList)
+
+# def main():
+#     TOTAL_IT = 10
+#     SINGLE_IT = 1
+#
+#     print(10*"--*--")
+#     SamplePath = np.array([])
+#
+#     TEST_START = datetime.datetime.now()
+#
+#     for it in range(TOTAL_IT):
+#
+#         if (it+1)/TOTAL_IT*100%10 == 0:
+#             print("Progress:" + str((it+1)/TOTAL_IT*100)+"%")
+#
+#         t_start = datetime.datetime.now()
+#         for _ in range(SINGLE_IT):
+#             r = requests.get(myurl)
+#
+#         t_end = datetime.datetime.now()
+#         duration = t_end - t_start
+#         SamplePath = np.append(SamplePath,[duration.total_seconds()])
+#         # print("Total time: "+ str(t_end - t_start) )
+#     TEST_END = datetime.datetime.now()
+#     TOTAL_TIME = TEST_END - TEST_START
+#     print(5 * "--*--" + " The end " + 5 * "--*--")
+#     print("Testing window: " + str(TEST_START.replace(second=0, microsecond=0))+" to "+ str(TEST_END.replace(second=0, microsecond=0)))
+#     print("Total elapsed time: " + str(TOTAL_TIME.total_seconds()) + "s")
+#
+#     np.savetxt('fit_model_update.csv', SamplePath, delimiter=',')  # X is an array
+#     dataprocessing.plotresult('fit_model_update.csv', "fit_model_update")
+
 
 
 if __name__ == "__main__":
     main()
+    # try:
+    #     main()
+    # except Exception as e:
+    #     print(e)
