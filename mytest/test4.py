@@ -2,20 +2,35 @@ import requests, pprint
 import datetime
 import numpy as np
 import matplotlib.pyplot as plt
+import re,random
 
 import dataprocessing
-import csv
+import csv,os
+from pathlib import Path
 
-# myurl = "http://app-dev.vor.frgrisk.com:7980/SASStoredProcess/do?_username=stpservice@saspw&_password=%7BSAS002%7DF7A6FA3F175EB5A8504C13D1570D585D&_program=%2FSystem%2FApplications%2FVOR+System%2FCommon%2Fstps%2FFactorModel%2Ffit_model&_action=EXECUTE&start_dt=03Jun2008&end_dt=30Jun2017&freq=MONTH&fund=146&model_sk=168&factor=130&factor=131&restrict=.&restrict=3"
+def check_output_file():
+
+    for filename in ["AllTestSamplePath","new_index_name"]:
+        myfile = Path(filename + ".csv")
+        if myfile.is_file():
+            print("Delete existing file:"+ filename +".csv")  
+            os.remove(filename + ".csv")
+        else:
+            print("Create "+ filename+".csv")
+
 
 def test_stp_service(Service_Name, Service_URL, Total_It):
     print(5*"--*--"+"Start Testing"+5*"--*--")
+
     SamplePath = np.array([])
     TEST_START = datetime.datetime.now()
 
     for it in range(Total_It):
         if (it+1)/Total_It*100%10 == 0:
             print("Testing "+ Service_Name+" Progress:" + str((it+1)/Total_It*100)+"%")
+    # If the service is insert_var and upload_time_series, then need to generate data
+        if Service_Name == "Insert_Variable":
+            Service_URL = treat_InsertVariable(Service_Name, Service_URL)
 
         t_start = datetime.datetime.now()
         r = requests.get(Service_URL)
@@ -31,10 +46,10 @@ def test_stp_service(Service_Name, Service_URL, Total_It):
 
     np.savetxt('output/'+Service_Name+'.csv', SamplePath, delimiter=',')  # X is an array
 
-    outfile = open('example.csv', 'a+')
-    writer = csv.writer(outfile, delimiter=';', quotechar='"')
+    outfile = open('AllTestSamplePath.csv', 'a+')
+    writer = csv.writer(outfile, delimiter=',',lineterminator = '\n')
+    # writer.writerow([SamplePath])
     writer.writerows([SamplePath])
-    # writer.writerows([Service_Name, SamplePath])
     outfile.close()
 
     return SamplePath
@@ -46,7 +61,23 @@ def readService2Test(filename):
             print(row[1])
             # print()
 
-def main():
+def treat_InsertVariable(Service_Name, Service_URL):
+    if re.search(r'&name=[\w]+&', Service_URL):
+        new_input_name = "test_index"+str(random.randint(1,100000))
+        new_input = "&name="+new_input_name+"&"
+        Service_URL = re.sub(r'&name=[\w]+&',new_input , Service_URL)
+        print(new_input_name)
+        outfile = open('new_index_name.csv','a+')
+        writer = csv.writer(outfile, delimiter=',',lineterminator = '\n')
+        writer.writerow([new_input_name])
+        outfile.close()
+    else:
+        raise Exception("No name= field found!")
+    return Service_URL
+
+def main(Total_It):
+    check_output_file()
+
     ServiceList=[]
     AllSamplePath = np.array([])
 
@@ -57,7 +88,7 @@ def main():
 
         ServiceList.append(Service_Name) 
         print(row)
-        test_stp_service(Service_Name,Service_URL,1)
+        test_stp_service(Service_Name,Service_URL,Total_It)
         dataprocessing.plotresult(Service_Name)
 
     print(4*"--*---"+"Complete Test List"+4*"--*---")
@@ -97,7 +128,7 @@ def main():
 
 
 if __name__ == "__main__":
-    main()
+    main(500)
     # try:
     #     main()
     # except Exception as e:
