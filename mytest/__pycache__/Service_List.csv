@@ -1,0 +1,1 @@
+﻿Cal_Time_Series,http://app-dev.vor.frgrisk.com:7980/SASStoredProcess/do?_username=webrunner@saspw&_password=AsdF!23$&_program=%2FSystem%2FApplications%2FVOR+System%2FCommon%2Fstps%2FFactorModel%2Fcalc_factor_time_series&_action=EXECUTE&variable_list=136%20137&start_dt=01JAN2010&end_dt=28MAR2017&freq=month
