@@ -8,4 +8,3 @@ Get_Models, http://app-dev.vor.frgrisk.com:7980/SASStoredProcess/do?_username=we
 Get_Time_Series,http://app-dev.vor.frgrisk.com:7980/SASStoredProcess/do?_username=webrunner@saspw&_password=AsdF!23$&_program=%2FSystem%2FApplications%2FVOR+System%2FCommon%2Fstps%2FFactorModel%2Fget_time_series&_action=EXECUTE&variable_list=137%20136&start_dt=01JAN2010&end_dt=28MAR2017&freq=month
 List_Models,http://app-dev.vor.frgrisk.com:7980/SASStoredProcess/do?_username=webrunner@saspw&_password=AsdF!23$&_program=%2FSystem%2FApplications%2FVOR+System%2FCommon%2Fstps%2FFactorModel%2Flist_models&_action=EXECUTE&variable_list=146%20117&model_List=73
 List_Variables,http://app-dev.vor.frgrisk.com:7980/SASStoredProcess/do?_username=webrunner@saspw&_password=AsdF!23$&_program=%2FSystem%2FApplications%2FVOR+System%2FCommon%2Fstps%2FFactorModel%2Flist_variables&_action=EXECUTE&typeList=fund%20index
-
