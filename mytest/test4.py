@@ -63,10 +63,10 @@ def readService2Test(filename):
 
 def treat_InsertVariable(Service_Name, Service_URL):
     if re.search(r'&name=[\w]+&', Service_URL):
-        new_input_name = "test_index"+str(random.randint(1,100000))
+        new_input_name = "test_FACTOR"+str(random.randint(1,100000))
         new_input = "&name="+new_input_name+"&"
         Service_URL = re.sub(r'&name=[\w]+&',new_input , Service_URL)
-        print(new_input_name)
+        # print(new_input_name)
         outfile = open('new_index_name.csv','a+')
         writer = csv.writer(outfile, delimiter=',',lineterminator = '\n')
         writer.writerow([new_input_name])
@@ -128,8 +128,8 @@ def main(Total_It):
 
 
 if __name__ == "__main__":
-    main(500)
-    # try:
-    #     main()
-    # except Exception as e:
-    #     print(e)
+    # main(1)
+    try:
+        main(200)
+    except Exception as e:
+        print(e)
